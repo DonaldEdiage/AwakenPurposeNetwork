@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Icon } from "@iconify/react";
+import APN_Founder from "../../../public/images/APN_Founder.png";
 
 export default function FounderPage() {
   return (
@@ -46,39 +47,16 @@ export default function FounderPage() {
               <div className="aspect-square relative rounded-2xl overflow-hidden shadow-xl">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
                 {/* Replace with actual founder image */}
-                {/* <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
                     <Image
-                      src="/images/APN_Founder.png"
+                      src={APN_Founder}
                       alt="Journey"
                       fill
                       className="object-cover object-[center_10%] transition-transform duration-700 ease-out hover:scale-110"
                       sizes="(max-width: 768px) 100vw, 50vw"
                     />
                     <p className="text-lg font-semibold text-gray-700 font-body">
-                      M. Esene Ekole
-                    </p>
-                  </div>
-                </div> */}
-
-                {/* Replace with actual founder image */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center relative w-full h-full">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/images/APN_Founder.png"
-                      alt="Journey"
-                      className="object-cover object-[center_10%] transition-transform duration-700 ease-out hover:scale-110"
-                      style={{
-                        position: "absolute",
-                        width: "100%",
-                        height: "100%",
-                        inset: 0,
-                      }}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <p className="text-lg font-semibold text-gray-700 font-body relative z-10">
                       M. Esene Ekole
                     </p>
                   </div>
