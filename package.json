@@ -6,16 +6,23 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "prod": "npm run build && npm run start"
   },
   "dependencies": {
-    "next": "16.0.3",
+    "@netlify/blobs": "^10.7.4",
+    "@netlify/functions": "^5.2.0",
+    "critters": "^0.0.23",
+    "form-data": "^4.0.6",
+    "next": "^16.2.4",
+    "next-font": "^1.2.0",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "resend": "^6.12.3"
   },
   "devDependencies": {
+    "@iconify/react": "^6.0.2",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^20.19.40",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
