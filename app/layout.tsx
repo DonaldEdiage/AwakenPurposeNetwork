@@ -56,7 +56,11 @@ const lato = Lato({
 export const metadata: Metadata = {
   title: "Awaken Purpose Network",
   description: "Spiritual teachings and resources by M.E. Esene",
-  // Favicon is automatically served from app/favicon.ico
+  icons: {
+    icon: "/images/browser-logo.png",
+    shortcut: "/images/browser-logo.png",
+    apple: "/images/browser-logo.png",
+  },
 };
 
 export default function RootLayout({
