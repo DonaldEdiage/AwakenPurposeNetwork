@@ -83,7 +83,7 @@ export default function RootLayout({
         <Script
           src="https://cdn.snipcart.com/themes/v3.0.31/default/snipcart.js"
           strategy="afterInteractive"
-          data-api-key={process.env.NEXT_PUBLIC_SNIPCART_API_KEY}
+          data-api-key={process.env.NEXT_SNIPCART_API_KEY}
           data-config-add-product-behavior="none"
         />
         <link
@@ -93,7 +93,7 @@ export default function RootLayout({
         <div
           id="snipcart"
           hidden
-          data-api-key={process.env.NEXT_PUBLIC_SNIPCART_API_KEY}
+          data-api-key={process.env.NEXT_SNIPCART_API_KEY}
         ></div>
       </body>
     </html>
