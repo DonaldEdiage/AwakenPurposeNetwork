@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { Icon } from "@iconify/react";
-import APN_Founder from "../../../public/images/APN_Founder.png";
 
 export default function FounderPage() {
   return (
@@ -50,7 +49,7 @@ export default function FounderPage() {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
                     <Image
-                      src={APN_Founder}
+                      src="/images/APN_Founder.png"
                       alt="Journey"
                       fill
                       className="object-cover object-[center_10%] transition-transform duration-700 ease-out hover:scale-110"
