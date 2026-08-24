@@ -70,7 +70,10 @@ export async function POST(request: NextRequest) {
     // Send email
     const { data, error } = await resend.emails.send({
       from: "APN Speaking <onboarding@resend.dev>",
-      to: [process.env.SPEAKING_RECIPIENT_EMAIL || "moamaa111@gmail.com"],
+      to: [
+        process.env.SPEAKING_RECIPIENT_EMAIL ||
+          "awakenpurposenetwork@gmail.com",
+      ],
       subject: `Speaking Invitation: ${eventName} - ${fullName}`,
       html: emailContent,
       replyTo: email,

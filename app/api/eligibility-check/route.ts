@@ -43,7 +43,10 @@ export async function POST(request: NextRequest) {
     // Send email notification
     const { error } = await resend.emails.send({
       from: "Eligibility Check <onboarding@resend.dev>",
-      to: [process.env.ELIGIBILITY_RECIPIENT_EMAIL || "moamaa111@gmail.com"],
+      to: [
+        process.env.ELIGIBILITY_RECIPIENT_EMAIL ||
+          "awakenpurposenetwork@gmail.com",
+      ],
       subject: `New Eligibility Check Request: ${fullName}`,
       html: emailContent,
       replyTo: email,

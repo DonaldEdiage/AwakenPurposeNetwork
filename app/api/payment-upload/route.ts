@@ -113,7 +113,9 @@ export async function POST(request: NextRequest) {
     // Send email notification
     const { error } = await resend.emails.send({
       from: "Payment Confirmation <onboarding@resend.dev>",
-      to: [process.env.PAYMENT_RECIPIENT_EMAIL || "moamaa111@gmail.com"],
+      to: [
+        process.env.PAYMENT_RECIPIENT_EMAIL || "awakenpurposenetwork@gmail.com",
+      ],
       subject: `New Payment Confirmation: ${fullName} - ${paymentMethod}`,
       html: emailContent,
       replyTo: email,

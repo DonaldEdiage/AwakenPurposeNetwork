@@ -32,7 +32,9 @@ export async function POST(request: NextRequest) {
     // Send email notification
     const { error } = await resend.emails.send({
       from: "APN Contact <onboarding@resend.dev>",
-      to: [process.env.CONTACT_RECIPIENT_EMAIL || "moamaa111@gmail.com"],
+      to: [
+        process.env.CONTACT_RECIPIENT_EMAIL || "awakenpurposenetwork@gmail.com",
+      ],
       subject: `New Contact Form: ${reason} - ${fullName}`,
       html: emailContent,
       replyTo: email,

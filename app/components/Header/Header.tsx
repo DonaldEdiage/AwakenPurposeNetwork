@@ -2,7 +2,7 @@ import SocialMediaBar from "../SocialMediaBar/SocialMediaBar";
 import MenuBar from "./MenuBar";
 import Link from "next/link";
 {
-  /** Enabled git lfs */
+  /** Enabled git   lfs */
 }
 
 export default function Header() {

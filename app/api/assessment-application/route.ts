@@ -129,7 +129,10 @@ export async function POST(request: NextRequest) {
     // Send email notification
     const { data, error } = await resend.emails.send({
       from: "Assessment Application <onboarding@resend.dev>",
-      to: [process.env.ASSESSMENT_RECIPIENT_EMAIL || "moamaa111@gmail.com"],
+      to: [
+        process.env.ASSESSMENT_RECIPIENT_EMAIL ||
+          "awakenpurposenetwork@gmail.com",
+      ],
       subject: `New Assessment Application: ${fullName} - ${goal}`,
       html: emailContent,
       replyTo: email,

@@ -342,7 +342,9 @@ export async function POST(request: NextRequest) {
     // Send email notification
     const { error } = await resend.emails.send({
       from: "GGSI Application <onboarding@resend.dev>",
-      to: [process.env.GGSI_RECIPIENT_EMAIL || "moamaa111@gmail.com"],
+      to: [
+        process.env.GGSI_RECIPIENT_EMAIL || "awakenpurposenetwork@gmail.com",
+      ],
       subject: `New GGSI Application: ${fullName}`,
       html: emailContent,
       replyTo: email,
