@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
           grant_type: "authorization_code",
           client_id: process.env.DROPBOX_APP_KEY!,
           client_secret: process.env.DROPBOX_APP_SECRET!,
-          redirect_uri: `${process.env.NEXT_PUBLIC_BASE_URL}/api/dropbox/callback`,
+          redirect_uri: `${process.env.NEXT_PRIVATE_BASE_URL}/api/dropbox/callback`,
         }),
       },
     );
