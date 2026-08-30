@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const DROPBOX_ACCESS_TOKEN = process.env.DROPBOX_ACCESS_TOKEN;
 
 // Define types
 interface UploadedFile {
@@ -44,9 +43,44 @@ interface EmailData {
   uploadedFiles: UploadedFile[];
 }
 
-// Upload file to Dropbox
+// 🔑 Helper: Get a fresh access token using the refresh token
+async function getDropboxAccessToken() {
+  const refreshToken = process.env.DROPBOX_REFRESH_TOKEN;
+  const clientId = process.env.DROPBOX_APP_KEY;
+  const clientSecret = process.env.DROPBOX_APP_SECRET;
+
+  if (!refreshToken || !clientId || !clientSecret) {
+    throw new Error("Missing Dropbox OAuth environment variables");
+  }
+
+  const response = await fetch("https://api.dropboxapi.com/oauth2/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+      client_id: clientId,
+      client_secret: clientSecret,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("Dropbox token refresh error:", data);
+    throw new Error("Failed to refresh Dropbox access token");
+  }
+
+  return data.access_token;
+}
+
+// 📤 Upload file to Dropbox using a fresh access token
 const uploadToDropbox = async (file: File, path: string) => {
   try {
+    const accessToken = await getDropboxAccessToken();
+
     const arrayBuffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
 
@@ -55,7 +89,7 @@ const uploadToDropbox = async (file: File, path: string) => {
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${DROPBOX_ACCESS_TOKEN}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/octet-stream",
           "Dropbox-API-Arg": JSON.stringify({
             path: path,
@@ -69,7 +103,7 @@ const uploadToDropbox = async (file: File, path: string) => {
     );
 
     if (uploadResponse.ok) {
-      console.log("File Uploaded succesfully to Dropbox");
+      console.log("✅ File uploaded successfully to Dropbox:", path);
       return await uploadResponse.json();
     } else {
       const errorText = await uploadResponse.text();
@@ -228,7 +262,6 @@ const buildEmailContent = (data: EmailData): string => {
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse multipart form data using Next.js built-in method
     const formData = await request.formData();
 
     // Extract text fields
@@ -278,7 +311,7 @@ export async function POST(request: NextRequest) {
     const safeName = fullName.replace(/\s/g, "_");
 
     for (const file of documents) {
-      if (file && DROPBOX_ACCESS_TOKEN) {
+      if (file) {
         const dropboxPath = `/GGSI_Applications/${timestamp}_${safeName}_${file.name}`;
         try {
           const result = await uploadToDropbox(file, dropboxPath);
@@ -289,19 +322,11 @@ export async function POST(request: NextRequest) {
               size: result.size,
             });
             console.log("✅ File uploaded to Dropbox:", dropboxPath);
-            console.log(
-              "DROPBOX_ACCESS_TOKEN exists?",
-              !!process.env.DROPBOX_ACCESS_TOKEN,
-            );
           } else {
             console.warn("⚠️ Dropbox upload failed for:", file.name);
-            console.log(
-              "DROPBOX_ACCESS_TOKEN exists?",
-              !!process.env.DROPBOX_ACCESS_TOKEN,
-            );
           }
         } catch (error) {
-          console.error("Dropbox upload error:", error);
+          console.error("Dropbox upload error for", file.name, ":", error);
         }
       }
     }
@@ -364,14 +389,15 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Handler error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error: " + errorMessage },
       { status: 500 },
     );
   }
 }
 
-// OPTIONS handler for CORS
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,

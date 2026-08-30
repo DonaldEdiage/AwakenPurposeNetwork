@@ -4,11 +4,46 @@ import { Resend } from "resend";
 import { paymentConfirmationEmail } from "../../emailTemplates/paymentConfirmationEmail.js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const DROPBOX_ACCESS_TOKEN = process.env.DROPBOX_ACCESS_TOKEN;
 
-// Upload file to Dropbox
+// 🔑 Helper: Get a fresh access token using the refresh token
+async function getDropboxAccessToken() {
+  const refreshToken = process.env.DROPBOX_REFRESH_TOKEN;
+  const clientId = process.env.DROPBOX_APP_KEY;
+  const clientSecret = process.env.DROPBOX_APP_SECRET;
+
+  if (!refreshToken || !clientId || !clientSecret) {
+    throw new Error("Missing Dropbox OAuth environment variables");
+  }
+
+  const response = await fetch("https://api.dropboxapi.com/oauth2/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+      client_id: clientId,
+      client_secret: clientSecret,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("Dropbox token refresh error:", data);
+    throw new Error("Failed to refresh Dropbox access token");
+  }
+
+  return data.access_token;
+}
+
+// 📤 Upload file to Dropbox using a fresh access token
 const uploadToDropbox = async (file: File, path: string) => {
   try {
+    // ✅ Get a fresh access token
+    const accessToken = await getDropboxAccessToken();
+
     const arrayBuffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
 
@@ -17,7 +52,7 @@ const uploadToDropbox = async (file: File, path: string) => {
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${DROPBOX_ACCESS_TOKEN}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/octet-stream",
           "Dropbox-API-Arg": JSON.stringify({
             path: path,
@@ -45,21 +80,16 @@ const uploadToDropbox = async (file: File, path: string) => {
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse multipart form data using Next.js built-in method
     const formData = await request.formData();
 
-    // Extract text fields
     const paymentMethod = formData.get("paymentMethod") as string;
     const fullName = formData.get("fullName") as string;
     const email = formData.get("email") as string;
     const whatsapp = formData.get("whatsapp") as string;
     const date = formData.get("date") as string;
     const time = formData.get("time") as string;
-
-    // Extract file (the first uploaded file)
     const paymentFile = formData.get("paymentFile") as File | null;
 
-    // Validation
     if (!paymentMethod || !fullName || !email || !whatsapp) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -71,9 +101,8 @@ export async function POST(request: NextRequest) {
     const orangeNumber = "656596734";
     const amount = "30,000 FCFA";
 
-    // Upload file to Dropbox
     let uploadedFile = null;
-    if (paymentFile && DROPBOX_ACCESS_TOKEN) {
+    if (paymentFile) {
       const timestamp = Date.now();
       const safeName = fullName.replace(/\s/g, "_");
       const dropboxPath = `/Consultaion_Payment_Confirmations/${timestamp}_${safeName}_${paymentFile.name}`;
@@ -93,11 +122,10 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         console.error("Dropbox upload error:", error);
       }
-    } else if (paymentFile) {
-      console.warn("⚠️ Dropbox token not configured");
+    } else {
+      console.warn("⚠️ No payment file provided");
     }
 
-    // Generate email content using template
     const emailContent = paymentConfirmationEmail({
       paymentMethod,
       mtnNumber,
@@ -110,7 +138,6 @@ export async function POST(request: NextRequest) {
       time,
     });
 
-    // Send email notification
     const { error } = await resend.emails.send({
       from: "Payment Confirmation <onboarding@resend.dev>",
       to: [
@@ -144,7 +171,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// OPTIONS handler for CORS
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,

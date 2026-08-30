@@ -9,7 +9,7 @@ export async function GET() {
   const redirectUri = `${process.env.NEXT_PRIVATE_BASE_URL}/api/dropbox/callback`;
 
   // Build the authorization URL
-  const authUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&token_access_type=offline`;
+  const authUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&token_access_type=offline`;
 
   // Redirect the user to Dropbox
   return NextResponse.redirect(authUrl);

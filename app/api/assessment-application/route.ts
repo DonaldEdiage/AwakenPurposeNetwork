@@ -4,12 +4,45 @@ import { Resend } from "resend";
 import { assessmentApplicationEmail } from "../../emailTemplates/assessmentApplicationEmail.js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const DROPBOX_ACCESS_TOKEN = process.env.DROPBOX_ACCESS_TOKEN;
 
-// Upload file to Dropbox
+// 🔑 Helper: Get a fresh access token using the refresh token
+async function getDropboxAccessToken() {
+  const refreshToken = process.env.DROPBOX_REFRESH_TOKEN;
+  const clientId = process.env.DROPBOX_APP_KEY;
+  const clientSecret = process.env.DROPBOX_APP_SECRET;
+
+  if (!refreshToken || !clientId || !clientSecret) {
+    throw new Error("Missing Dropbox OAuth environment variables");
+  }
+
+  const response = await fetch("https://api.dropboxapi.com/oauth2/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+      client_id: clientId,
+      client_secret: clientSecret,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("Dropbox token refresh error:", data);
+    throw new Error("Failed to refresh Dropbox access token");
+  }
+
+  return data.access_token;
+}
+
+// 📤 Upload file to Dropbox using a fresh access token
 const uploadToDropbox = async (file: File, path: string) => {
   try {
-    // Convert File to Buffer
+    const accessToken = await getDropboxAccessToken();
+
     const arrayBuffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
 
@@ -18,7 +51,7 @@ const uploadToDropbox = async (file: File, path: string) => {
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${DROPBOX_ACCESS_TOKEN}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/octet-stream",
           "Dropbox-API-Arg": JSON.stringify({
             path: path,
@@ -46,7 +79,6 @@ const uploadToDropbox = async (file: File, path: string) => {
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse multipart form data using Next.js built-in method
     const formData = await request.formData();
 
     // Extract text fields
@@ -80,7 +112,7 @@ export async function POST(request: NextRequest) {
     let uploadedFile = null;
     let hasCV = false;
 
-    if (cvFile && DROPBOX_ACCESS_TOKEN) {
+    if (cvFile) {
       hasCV = true;
       const timestamp = Date.now();
       const safeName = fullName.replace(/\s/g, "_");
@@ -101,9 +133,8 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         console.error("Dropbox upload error:", error);
       }
-    } else if (cvFile) {
-      hasCV = true;
-      console.warn("⚠️ Dropbox token not configured");
+    } else {
+      console.warn("⚠️ No CV file provided");
     }
 
     // Generate email content
@@ -127,7 +158,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Send email notification
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: "Assessment Application <onboarding@resend.dev>",
       to: [
         process.env.ASSESSMENT_RECIPIENT_EMAIL ||
@@ -154,14 +185,15 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Handler error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error: " + errorMessage },
       { status: 500 },
     );
   }
 }
 
-// OPTIONS handler for CORS
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
