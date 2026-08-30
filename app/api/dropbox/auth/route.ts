@@ -6,7 +6,7 @@ export async function GET() {
   const clientId = process.env.DROPBOX_APP_KEY;
 
   // The URL where Dropbox will redirect after authorization
-  const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL}/api/dropbox/callback`;
+  const redirectUri = `${process.env.NEXT_PRIVATE_BASE_URL}/api/dropbox/callback`;
 
   // Build the authorization URL
   const authUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&token_access_type=offline`;
