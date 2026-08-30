@@ -67,7 +67,7 @@ function ConsultationPaymentUploadContent() {
       formData.append("paymentFile", file);
 
       // ✅ CORRECT: Call payment-upload for consultations
-      const response = await fetch("/api/payment-upload", {
+      const response = await fetch("/api/payment-upload/", {
         method: "POST",
         body: formData,
       });

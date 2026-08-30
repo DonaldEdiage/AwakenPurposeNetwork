@@ -142,7 +142,7 @@ function PaymentUploadContent() {
       formData.append("paymentFile", file);
 
       // ✅ FIXED: Call the CORRECT function for books
-      const response = await fetch("/api/book-payment-upload", {
+      const response = await fetch("/api/book-payment-upload/", {
         method: "POST",
         body: formData,
       });

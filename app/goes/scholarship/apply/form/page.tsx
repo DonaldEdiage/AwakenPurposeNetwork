@@ -269,7 +269,7 @@ export default function GGSIApplicationForm() {
         formDataToSend.append("documents", formData.cv);
       }
 
-      const response = await fetch("/api/ggsi-application", {
+      const response = await fetch("/api/ggsi-application/", {
         method: "POST",
         body: formDataToSend,
       });

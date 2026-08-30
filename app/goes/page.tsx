@@ -173,7 +173,7 @@ export default function GOESPage() {
     });
 
     try {
-      const response = await fetch("/api/goes-application", {
+      const response = await fetch("/api/goes-application/", {
         method: "POST",
         // Don't set Content-Type header - browser will set it with boundary for FormData
         body: formDataToSend,

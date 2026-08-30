@@ -164,7 +164,7 @@ export default function ApplyForAssessmentPage() {
         formDataToSend.append("cv", formData.cv);
       }
 
-      const response = await fetch("/api/assessment-application", {
+      const response = await fetch("/api/assessment-application/", {
         method: "POST",
         body: formDataToSend,
       });
